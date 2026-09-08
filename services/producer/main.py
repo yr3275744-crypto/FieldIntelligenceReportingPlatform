@@ -16,7 +16,7 @@ def main(path):
             configuration.producer.produce(configuration.topic, 
                                            value=json.dumps(val),
                                            callback=acked)
-            configuration.producer.poll(0.5)
-
+            configuration.producer.poll(0.1)
+        configuration.producer.flush()
 if __name__ == "__main__":
     main(configuration.data_file_path)
