@@ -16,8 +16,8 @@ namespace Consumer.Models
         public string Theater { get; set; } = string.Empty;
         public string Sector { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
-        public ValidReportTypes ReportType { get; set; }
-        public ValidPriorities Priority { get; set; }
+        public string ReportType { get; set; } = string.Empty;
+        public string Priority { get; set; } = string.Empty;
         public string SourceType { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string? SubjectId { get; set; }

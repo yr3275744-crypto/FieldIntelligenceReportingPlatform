@@ -8,5 +8,9 @@ namespace Consumer.Enums
 {
     public enum ValidPriorities
     {
+        Low,
+        Medium, 
+        High, 
+        Critical
     }
 }

@@ -8,6 +8,12 @@ namespace Consumer.Enums
 {
     public enum ValidReportTypes
     {
-
+        Observation, 
+        Movement, 
+        Meeting, 
+        Access, 
+        Communication, 
+        Logistics, 
+        Incident
     }
 }
