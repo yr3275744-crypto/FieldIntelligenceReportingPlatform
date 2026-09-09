@@ -3,13 +3,17 @@ import socket
 import os
 from pathlib import Path
 import logging
+from dotenv import load_dotenv
 
-conf = {'bootstrap.servers': os.environ["KAFKA_SERVERS"],
+# load the env fie
+load_dotenv()
+
+conf = {'bootstrap.servers': os.getenv("KAFKA_SERVERS"),
         'client.id': socket.gethostname()}
 
 producer = Producer(conf)
 
-topic = os.environ["KAFKA_TOPIC"]
+topic = os.getenv("KAFKA_TOPIC")
 
 logs_file_path = Path(__file__).parents[2] / "logs" / "logs.log"
 

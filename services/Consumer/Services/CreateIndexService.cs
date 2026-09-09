@@ -11,14 +11,14 @@ namespace Consumer.Services
     public class CreateIndexService
     {
         private readonly ElasticsearchClient _client;
-        private readonly ConfigStrings _configStrings
+        private readonly ConfigStrings _configStrings;
         public CreateIndexService(ElasticsearchClient client,
             ConfigStrings configStrings)
         {
             _client = client;
             _configStrings = configStrings;
         }
-        public async Task<bool> Create()
+        public async Task<bool> CreateIndex()
         {
             var response = await _client.Indices.CreateAsync<Report>(c =>
             c.Index(_configStrings.IndexName)
@@ -32,11 +32,12 @@ namespace Consumer.Services
                         .Keyword(r => r.Sector)
                         .Keyword(r => r.Location)
                         .Keyword(r => r.ReportType)
-                        .Keyword(r => r.Priority)
-                        .Keyword(r => r.SourceType)
+                        .Keyword(r => r.Priority.ToString())
+                        .Keyword(r => r.SourceType.ToString())
                         .Text(r => r.Message)
                         .Keyword(r => r.SubjectId)
                         .Keyword(r => r.SubjectType)
+                        .Date(r => r.ProcessedAt)
                              )
                         )
                     );

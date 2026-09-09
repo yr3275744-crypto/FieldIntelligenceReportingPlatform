@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 
 namespace Consumer.Models
 {
-    public class Report
+    public class ReportInput
     {
         public string ReportId { get; set; } = string.Empty;
-
-        [JsonPropertyName("@timestamp")]
         public DateTime Timestamp { get; set; }
         public string AgentId { get; set; } = string.Empty;
         public string Unit { get; set; } = string.Empty;
@@ -29,6 +27,5 @@ namespace Consumer.Models
         public string Message { get; set; } = string.Empty;
         public string? SubjectId { get; set; }
         public string? SubjectType { get; set; }
-        public DateTime ProcessedAt { get; set; } = DateTime.Now;
     }
 }
