@@ -5,9 +5,9 @@ logger = logging.getLogger()
 
 def acked(err, msg):
     if err is not None:
-        print("Failed to deliver message: %s: %s" % (str(msg), str(err)))
+        configuration.logger.info("Failed to deliver message: %s: %s" % (str(msg), str(err)))
     else:
-        print("Message produced: %s" % (str(msg)))
+        configuration.logger.info("Message produced: %s" % (str(msg)))
 
 def main(path):
         with open(path, "r") as file:

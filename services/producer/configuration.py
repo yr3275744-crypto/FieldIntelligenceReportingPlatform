@@ -15,10 +15,13 @@ producer = Producer(conf)
 
 topic = os.getenv("KAFKA_TOPIC")
 
-logs_file_path = Path(__file__).parents[2] / "logs" / "logs.log"
+logs_file_path = Path(__file__).parent / "logs" / "logs.log"
 
 file_handler = logging.FileHandler(logs_file_path)
-logger = logging.basicConfig(handlers=[file_handler])
+logging.basicConfig(
+    handlers=[file_handler],
+    level=logging.INFO
+)
 logger = logging.getLogger("producer-logger")
 
 try:
