@@ -3,7 +3,8 @@ using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 namespace Consumer;
-
+using Microsoft.Extensions.Logging;
+using Serilog;
 using Consumer.Models;
 using dotenv.net;
 
@@ -25,11 +26,18 @@ public class Program
         });
         string uri = Environment.GetEnvironmentVariable("ELASTIC_ENDPOINT")!;
         var settings = new ElasticsearchClientSettings(new Uri(uri));
+
+        
+        //serviceCollection.AddLogging(builder => builder.Add())
         serviceCollection.AddSingleton(sp => new ElasticsearchClient(settings));
         serviceCollection.AddSingleton<CreateIndexService>();
         serviceCollection.AddSingleton<ReportValidator>();
         serviceCollection.AddScoped<ConsumeToDbService>();
-
+        serviceCollection.AddSingleton(sp => new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger());
         var provider = serviceCollection.BuildServiceProvider();
         bool IsCreated = await provider.GetRequiredService<CreateIndexService>().CreateIndex();
 

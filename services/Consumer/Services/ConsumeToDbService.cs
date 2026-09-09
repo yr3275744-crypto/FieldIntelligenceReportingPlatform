@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Consumer.Models;
 using Elastic.Clients.Elasticsearch;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,26 @@ namespace Consumer.Services
         private readonly ReportValidator _validator;
         private readonly ElasticsearchClient _client;
         private readonly IConsumer<Ignore, string> _consumer;
+        private readonly Serilog.Core.Logger _logger;
+
+        public ConsumeToDbService(ConfigStrings strings,
+            ReportValidator validator,
+            ElasticsearchClient client,
+            Serilog.Core.Logger logger)
+        {
+            _strings = strings;
+            _validator = validator;
+            _client = client;
+            _logger = logger;
+
+            var consumerConfig = new ConsumerConfig
+            {
+                BootstrapServers = _strings.Bootsrapservers,
+                GroupId = _strings.GroupId,
+                AutoOffsetReset = AutoOffsetReset.Earliest
+            };
+            _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
+        }
 
         private Report ConvertInputToReport(ReportInput input)
         {
@@ -39,22 +60,6 @@ namespace Consumer.Services
                 Unit = input.Unit
             };
             return report;
-        }
-        public ConsumeToDbService(ConfigStrings strings,
-            ReportValidator validator,
-            ElasticsearchClient client)
-        {
-            _strings = strings;
-            _validator = validator;
-            _client = client;
-
-            var consumerConfig = new ConsumerConfig
-            {
-                BootstrapServers = _strings.Bootsrapservers,
-                GroupId = _strings.GroupId,
-                AutoOffsetReset = AutoOffsetReset.Earliest
-            };
-            _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
         }
 
         public async Task ConsumeLoop(CancellationToken token)
@@ -89,14 +94,14 @@ namespace Consumer.Services
                         ReportInput? reportInput = JsonSerializer.Deserialize<ReportInput>(consumeResult.Message.Value, SeralizationOptions);
                         if (reportInput == null)
                         {
-                            Console.WriteLine("missing value");
+                            _logger.Information("invalid report - missing value");
                             continue;
                         }
                         Report report = ConvertInputToReport(reportInput);
                         var isValid = _validator.ValidateReport(report);
                         if (!isValid)
                         {
-                            Console.WriteLine("invalid report");
+                            _logger.Information("invalid report");
                             continue;
                         }
                         var response = await _client.IndexAsync(report, i => i
@@ -105,18 +110,17 @@ namespace Consumer.Services
                         );
                         if (response == null || !response.IsValidResponse)
                         {
-                            Console.WriteLine("The report send faild.");
+                            _logger.Information("The report send faild.");
                         }
                         else
                         {
-                            Console.WriteLine("The report send successfully");
+                            _logger.Information("The report send successfully");
                             validReports++;
                         }
                     }
                     catch (JsonException ex)
                     {
-                        Console.WriteLine("========== DESERIALIZATION ERROR ==========");
-                        Console.WriteLine(ex.Message);
+                        _logger.Information(ex,"invalid report");
                         Console.WriteLine(consumeResult.Message.Value);
                     }
                 }
@@ -134,7 +138,7 @@ namespace Consumer.Services
             {
                 _consumer.Unsubscribe();
                 _consumer.Close();
-                Console.WriteLine($"valid reports send: {validReports}");
+                _logger.Information($"valid reports send: {validReports}");
             }
         }
     }
