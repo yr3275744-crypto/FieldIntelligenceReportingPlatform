@@ -15,7 +15,11 @@ producer = Producer(conf)
 
 topic = os.getenv("KAFKA_TOPIC")
 
+logs_folder_path = Path(__file__).parent / "logs"
+if not os.path.exists(logs_folder_path):
+      os.mkdir(logs_folder_path)
 logs_file_path = Path(__file__).parent / "logs" / "logs.log"
+
 
 file_handler = logging.FileHandler(logs_file_path)
 logging.basicConfig(
@@ -24,7 +28,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger("producer-logger")
 
+data_folder_path = Path(__file__).parent / "data"
+if not os.path.exists(data_folder_path):
+      os.mkdir(data_folder_path)
+
 try:
-    data_file_path = Path(__file__).parents[2] / "data" / "field_reports.json"
+    data_file_path = Path(__file__).parent / "data" / "field_reports.json"
 except FileNotFoundError as ex:
         logger.error(f"file not found: {ex.filename}")
