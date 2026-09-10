@@ -26,5 +26,26 @@ namespace API.Controllers
             var result = await _reportService.BySubject(subjectId);
             return Ok(result);
         }
+        [HttpGet("reports")]
+        public async Task<ActionResult<IEnumerable<Report>>> FilterReports(
+            [FromQuery] string? theater,
+            [FromQuery] string? sector,
+            [FromQuery] string? location,
+            [FromQuery] string? priorities,
+            [FromQuery] DateTime? from,
+            [FromQuery] DateTime? to)
+        {
+            var result = await _reportService.ByErea(theater, sector, location, priorities, from, to);
+            return Ok(result);
+        }
+        //[HttpGet("reports")]
+        //public async Task<ActionResult<IEnumerable<Report>>> ByPriorityAndDate(
+        //    string? priorities,
+        //    DateTime? from,
+        //    DateTime? to)
+        //{
+        //    var result = await _reportService.ByPriorityAndDate(priorities, from, to);
+        //    return Ok(result);
+        //}
     }
 }

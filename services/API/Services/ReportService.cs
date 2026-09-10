@@ -45,6 +45,117 @@ namespace API.Services
                     );
             return response.Documents;
         }
+        public async Task<IEnumerable<Report>> ByErea(string? theater,
+            string? sector,
+            string? location,
+            string? priorities,
+            DateTime? from,
+            DateTime? to)
+        {
+            var queries = new List<Query>();
+            if (theater != null)
+            {
+                queries.Add(new TermQuery()
+                {
+                    Field = Infer.Field<Report>(r => r.Theater),
+                    Value = theater
+                });
+            }
+            if (sector != null)
+            {
+                queries.Add(new TermQuery()
+                {
+                    Field = Infer.Field<Report>(r => r.Sector),
+                    Value = sector
+                });
+            }
+            if (location != null)
+            {
+                queries.Add(new TermQuery()
+                {
+                    Field = Infer.Field<Report>(r => r.Location),
+                    Value = location
+                });
+            }
+            if (priorities != null)
+            {
+                queries.Add(new TermQuery()
+                {
+                    Field = Infer.Field<Report>(r => r.Priority),
+                    Value = priorities
+                });
+            }
 
+            if (from != null)
+            {
+                queries.Add(new DateRangeQuery()
+                {
+                    Field = Infer.Field<Report>(r => r.Timestamp),
+                    Gte = from
+                });
+            }
+
+            if (to != null)
+            {
+                queries.Add(new DateRangeQuery()
+                {
+                    Field = Infer.Field<Report>(r => r.Timestamp),
+                    Lte = to
+                });
+            }
+            var response = await _client.SearchAsync<Report>(s => s
+                .Indices(_indexName)
+                .Size(10000)
+                .Query(q => q
+                    .Bool(b => b
+                        .Filter(queries))));
+            return response.Documents;
+        }
+        //public async Task<IEnumerable<Report>> ByPriorityAndDate(
+        //    string? priorities,
+        //    DateTime? from,
+        //    DateTime? to)
+        //{
+        //    var queries = new List<Query>();
+
+        //    if (priorities != null)
+        //    {
+        //        queries.Add(new TermQuery()
+        //        {
+        //            Field = Infer.Field<Report>(r => r.Priority),
+        //            Value = priorities
+        //        });
+        //    }
+
+        //    if (from != null)
+        //    {
+        //        queries.Add(new DateRangeQuery()
+        //        {
+        //            Field = Infer.Field<Report>(r => r.Timestamp),
+        //            Gte = from
+        //        });
+        //    }
+
+        //    if (to != null)
+        //    {
+        //        queries.Add(new DateRangeQuery()
+        //        {
+        //            Field = Infer.Field<Report>(r => r.Timestamp),
+        //            Lte = to
+        //        });
+        //    }
+
+        //    var response = await _client.SearchAsync<Report>(s => s
+        //        .Indices(_indexName)
+        //        .Size(10000)
+        //        .Query(q => q
+        //            .Bool(b => b
+        //                .Filter(queries)
+        //            )
+        //        )
+        //    );
+
+        //    return response.Documents;
+        //}
     }
 }
