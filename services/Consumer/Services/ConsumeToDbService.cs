@@ -104,13 +104,14 @@ namespace Consumer.Services
                             _logger.Information("invalid report");
                             continue;
                         }
-                        var response = await _client.IndexAsync(report, i => i
+                        var response = await _client.CreateAsync(report, i => i
                         .Index(_strings.IndexName)
                         .Id(report.ReportId)
                         );
-                        if (response == null || !response.IsValidResponse)
+                        if (!response.IsValidResponse)
                         {
-                            _logger.Information("The report send faild.");
+                            _logger.Information("The report send faild, because: {@error}", 
+                                response.ElasticsearchServerError);
                         }
                         else
                         {
