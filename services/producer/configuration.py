@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 conf = {'bootstrap.servers': os.getenv("KAFKA_SERVERS"),
-        'client.id': socket.gethostname()}
+        'client.id': socket.gethostname(),
+        'retries': 10}
 
 producer = Producer(conf)
 

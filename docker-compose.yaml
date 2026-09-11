@@ -8,15 +8,21 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 15s
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -26,6 +32,12 @@ services:
     environment:
       - "discovery.type=single-node"
       - "xpack.security.enabled=false"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://elasticsearch:9200 >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 15s
   
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.0
@@ -36,3 +48,40 @@ services:
       ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
     depends_on:
       - elasticsearch
+
+  producer:
+    build: ./services/producer
+    container_name: producer
+    environment:
+      - "KAFKA_SERVERS=kafka:9092"
+      - "KAFKA_TOPIC=reports-topic"
+    depends_on:
+      kafka:
+        condition: service_healthy
+  consumer:
+    build: ./services/Consumer
+    container_name: consumer
+    environment:
+      - "KAFKA_SERVERS=kafka:9092"
+      - "KAFKA_TOPIC=reports-topic"
+      - "GROUP_ID=group-2"
+      - "ELASTIC_ENDPOINT=http://elasticsearch:9200"
+      - "INDEX_NAME=reports"
+    depends_on:
+      kafka:
+          condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      producer:
+        condition: service_started
+  api:
+    build: ./services/API
+    container_name: reports-api
+    ports:
+      - "8081:8080"
+    environment:
+      - "ELASTIC_ENDPOINT=http://elasticsearch:9200"
+      - "INDEX_NAME=reports"
+    depends_on:
+      - elasticsearch
+      - consumer
