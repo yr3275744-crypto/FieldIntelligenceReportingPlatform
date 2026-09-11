@@ -14,10 +14,17 @@ namespace API.Controllers
             _reportService = reportService;
         }
         [HttpGet("reports/search")]
-        public async Task<ActionResult<IEnumerable<Report>>> SearchByText(
-            [FromQuery] string text)
+        public async Task<ActionResult<IEnumerable<Report>>> Search(
+            [FromQuery] string? text,
+            [FromQuery] string? theater,
+            [FromQuery] string? sector,
+            [FromQuery] string? location,
+            [FromQuery] string? priorities,
+            [FromQuery] string? reportType,
+            [FromQuery] DateTime? from)
         {
-            var result = await _reportService.SearchByText(text);
+            var result = await _reportService.Search(text, theater, sector, location, 
+                priorities, reportType, from);
             return Ok(result);
         }
         [HttpGet("subjects/{subjectId}/reports")]
@@ -47,5 +54,11 @@ namespace API.Controllers
         //    var result = await _reportService.ByPriorityAndDate(priorities, from, to);
         //    return Ok(result);
         //}
+        [HttpGet("reports/statistics")]
+        public async Task<ActionResult<IEnumerable<ReportCountDto>>> GetStatistics()
+        {
+            var result = await _reportService.CountByGroups();
+            return Ok(result);
+        }
     }
 }

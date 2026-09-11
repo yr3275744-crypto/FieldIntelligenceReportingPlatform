@@ -4,7 +4,13 @@ namespace API.Services
 {
     public interface IReportService
     {
-        Task<IEnumerable<Report>> SearchByText(string text);
+        Task<IEnumerable<Report>> Search(string? text,
+            string? theater,
+            string? sector,
+            string? location,
+            string? priorities,
+            string? reportType,
+            DateTime? from);
         Task<IEnumerable<Report>> BySubject(string subjectId);
         Task<IEnumerable<Report>> ByErea(string? theater,
                 string? sector,
@@ -12,9 +18,6 @@ namespace API.Services
                 string? priorities,
                 DateTime? from,
                 DateTime? to);
-        //Task<IEnumerable<Report>> ByPriorityAndDate(
-        //    string? priorities,
-        //    DateTime? from,
-        //    DateTime? to);
+        Task<IEnumerable<ReportCountDto>> CountByGroups();
     }
 }
